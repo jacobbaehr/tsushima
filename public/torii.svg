@@ -1,0 +1,15 @@
+<!-- torii-gate-badge-large.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+    <!-- Background circle -->
+    <circle cx="32" cy="32" r="30" fill="currentColor"/>
+    <!-- Scaled-up Torii -->
+    <g transform="translate(0, -2) scale(1.25) translate(-6, -6)">
+        <!-- Curved lintel -->
+        <path fill="#fff" d="M12 22 Q32 10 52 22 L52 26 Q32 14 12 26Z"/>
+        <!-- Crossbeam -->
+        <rect x="16" y="28" width="32" height="3.5" fill="#fff" rx="1"/>
+        <!-- Pillars -->
+        <rect x="22" y="31" width="4" height="20" fill="#fff" rx="1"/>
+        <rect x="38" y="31" width="4" height="20" fill="#fff" rx="1"/>
+    </g>
+</svg>

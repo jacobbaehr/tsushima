@@ -25,7 +25,11 @@ function App() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState(null);
+  const [scale, setScale] = useState(1);
   const audioRef = useRef(null);
+  const mapRef = useRef(null);
 
   const toggleMusic = () => {
     if (isPlaying) {
@@ -36,13 +40,62 @@ function App() {
     setIsPlaying(!isPlaying);
   };
 
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!dragStart) return;
+    setOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
+  };
+
+  const handleMouseUp = () => setDragStart(null);
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+
+    const zoomSpeed = 0.0015;
+    const newScale = Math.min(Math.max(0.5, scale - e.deltaY * zoomSpeed), 3);
+
+    if (!mapRef.current) return;
+
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+
+    // Compute map-space coordinates (before zoom)
+    // We must measure relative to the container, not the mapRef rect
+    const container = mapRef.current.parentElement.getBoundingClientRect();
+    const relX = mouseX - container.left - offset.x;
+    const relY = mouseY - container.top - offset.y;
+
+    const worldX = relX / scale;
+    const worldY = relY / scale;
+
+    // Compute new offset so the same world point stays under the cursor
+    const newOffset = {
+      x: mouseX - container.left - worldX * newScale,
+      y: mouseY - container.top - worldY * newScale,
+    };
+
+    setOffset(newOffset);
+    setScale(newScale);
+  };
+
+
   return (
     <>
       <div
+        onWheel={handleWheel}
         style={{
           width: "100vw",
           height: "100vh",       // viewport height
-          overflowY: "scroll",   // enable scrolling
+          overflow: "hidden",
+          position: "relative",
+          backgroundColor: "#E9E0C8"
         }}
       >
         {/* Background Music (hidden player) */}
@@ -144,7 +197,24 @@ function App() {
             </div>
           </div>
         )}
-        <div style={{ position: "relative"}}>
+        <div
+          ref={mapRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            cursor: dragStart ? "grabbing" : "grab",
+            transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+            transformOrigin: "0 0",
+            transition: dragStart ? "none" : "transform 0.1s ease-out",
+          }}
+        >
           <img
             src="/tsushima.jpeg"
             alt="Tsushima Map"
